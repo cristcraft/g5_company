@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../partials/Header";
 import Footer from "../partials/Footer";
 import { Link } from "react-router-dom";
+import useUserData from "../../plugin/useUserData"
+import apiInstance from "../../utils/axios";
+import Moment from "../../plugin/Moment";
+
 
 function Profile() {
+
+    
     return (
         <>
             <Header />

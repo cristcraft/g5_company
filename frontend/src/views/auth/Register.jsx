@@ -40,7 +40,7 @@ function Register() {
             full_name: "",
             email: "",
             password: "",
-            password: ""
+            password2: ""
         })
     }
 

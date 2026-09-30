@@ -1,10 +1,58 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../partials/Header";
 import Footer from "../partials/Footer";
 import { Link } from "react-router-dom";
+import useUserData from "../../plugin/useUserData"
+import apiInstance from "../../utils/axios";
+import Moment from "../../plugin/Moment";
+
 
 function Posts() {
+    const [posts, setPosts] = useState([]);
+    const userId = useUserData()?.user_id
+
+    const fetchPosts = async () => {
+        try {
+            const post_res = await apiInstance.get(`author/dashboard/post-list/${userId}/`)
+            setPosts(post_res?.data)
+            console.log(userId)
+            
+        }catch (error) {
+            console.error("Error fetching posts:", error);
+        }
+
+    }
+
+    const handleSearch = (e) => {
+        const query = e.target.value.toLowerCase()
+        if(query === ""){
+            fetchPosts()
+        }else{
+            const filtered = posts.filter((p) => {
+                return p.title.toLowerCase().includes(query)
+            })
+            setPosts(filtered)
+        }
+    }
+
+    const handleSortChange  = (e) =>{
+        const sortedValue = e.target.value
+        const sortedPost = [...posts]
+
+        if(sortedValue === "Newest"){
+        sortedPost.sort((a,b) => new Date(b.date) - new Date(a.date))
+        }else if(sortedValue === "Oldest"){
+        sortedPost.sort((a,b) => new Date(a.date) - new Date(b.date))
+        } 
+        setPosts(sortedPost)
+    }
+
+    useEffect(() => {
+        fetchPosts()
+    }, [])
+
     return (
+
         <>
             <Header />
             <section className="py-4">
@@ -15,7 +63,7 @@ function Posts() {
                                 <div className="card-header bg-transparent border-bottom p-3">
                                     <div className="d-sm-flex justify-content-between align-items-center">
                                         <h5 className="mb-2 mb-sm-0">
-                                            All Blog Posts <span className="badge bg-primary bg-opacity-10 text-primary">5</span>
+                                            All Blog Posts <span className="badge bg-primary bg-opacity-10 text-primary">{posts?.length}</span>
                                         </h5>
                                         <a href="#" className="btn btn-sm btn-primary mb-0">
                                             Add New <i className="fas fa-plus"></i>
@@ -26,7 +74,7 @@ function Posts() {
                                     <div className="row g-3 align-items-center justify-content-between mb-3">
                                         <div className="col-md-8">
                                             <form className="rounded position-relative">
-                                                <input className="form-control pe-5 bg-transparent" type="search" placeholder="Search Articles" aria-label="Search" />
+                                                <input onChange={e => handleSearch(e)} className="form-control pe-5 bg-transparent" type="search" placeholder="Search Articles" aria-label="Search" />
                                                 <button className="btn bg-transparent border-0 px-2 py-0 position-absolute top-50 end-0 translate-middle-y" type="submit">
                                                     <i className="fas fa-search fs-6 " />
                                                 </button>
@@ -34,10 +82,10 @@ function Posts() {
                                         </div>
                                         <div className="col-md-3">
                                             <form>
-                                                <select className="form-select z-index-9 bg-transparent" aria-label=".form-select-sm">
+                                                <select onChange={handleSortChange} className="form-select z-index-9 bg-transparent" aria-label=".form-select-sm">
                                                     <option value="">Sort by</option>
-                                                    <option>Newest</option>
-                                                    <option>Oldest</option>
+                                                    <option value={"Newest"}>Newest</option>
+                                                    <option value={"Oldest"}>Oldest</option>
                                                 </select>
                                             </form>
                                         </div>
@@ -70,25 +118,26 @@ function Posts() {
                                                 </tr>
                                             </thead>
                                             <tbody className="border-top-0">
-                                                <tr>
+                                                {posts?.map((p, index) => (
+                                                <tr key={index}>
                                                     <td>
                                                         <h6 className="mt-2 mt-md-0 mb-0 ">
                                                             <a href="#" className="text-dark text-decoration-none">
-                                                                How to become a better django and react developer
+                                                                {p?.title}
                                                             </a>
                                                         </h6>
                                                     </td>
                                                     <td>
                                                         <h6 className="mb-0">
                                                             <a href="#" className="text-dark text-decoration-none">
-                                                                201 Views
+                                                                {p?.view} Views
                                                             </a>
                                                         </h6>
                                                     </td>
-                                                    <td>March 21, 2024.</td>
-                                                    <td>Technology</td>
+                                                    <td>{Moment(p.date)}</td>
+                                                    <td>{p?.category?.title}</td>
                                                     <td>
-                                                        <span className="badge bg-success bg-opacity-10 text-success mb-2">Live</span>
+                                                        <span className="badge bg-success bg-opacity-10 text-success mb-2">{p?.status}</span>
                                                     </td>
                                                     <td>
                                                         <div className="d-flex gap-2">
@@ -101,134 +150,7 @@ function Posts() {
                                                         </div>
                                                     </td>
                                                 </tr>
-
-                                                <tr>
-                                                    <td>
-                                                        <h6 className="mt-2 mt-md-0 mb-0 ">
-                                                            <a href="#" className="text-dark text-decoration-none">
-                                                                How to become a better django and react developer
-                                                            </a>
-                                                        </h6>
-                                                    </td>
-                                                    <td>
-                                                        <h6 className="mb-0">
-                                                            <a href="#" className="text-dark text-decoration-none">
-                                                                201 Views
-                                                            </a>
-                                                        </h6>
-                                                    </td>
-                                                    <td>March 21, 2024.</td>
-                                                    <td>Technology</td>
-                                                    <td>
-                                                        <span className="badge bg-success bg-opacity-10 text-success mb-2">Live</span>
-                                                    </td>
-                                                    <td>
-                                                        <div className="d-flex gap-2">
-                                                            <a href="#" className="btn-round mb-0 btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete">
-                                                                <i className="bi bi-trash" />
-                                                            </a>
-                                                            <a href="dashboard-post-edit.html" className="btn btn-primary btn-round mb-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
-                                                                <i className="bi bi-pencil-square" />
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-
-                                                <tr>
-                                                    <td>
-                                                        <h6 className="mt-2 mt-md-0 mb-0 ">
-                                                            <a href="#" className="text-dark text-decoration-none">
-                                                                How to become a better django and react developer
-                                                            </a>
-                                                        </h6>
-                                                    </td>
-                                                    <td>
-                                                        <h6 className="mb-0">
-                                                            <a href="#" className="text-dark text-decoration-none">
-                                                                201 Views
-                                                            </a>
-                                                        </h6>
-                                                    </td>
-                                                    <td>March 21, 2024.</td>
-                                                    <td>Technology</td>
-                                                    <td>
-                                                        <span className="badge bg-success bg-opacity-10 text-success mb-2">Live</span>
-                                                    </td>
-                                                    <td>
-                                                        <div className="d-flex gap-2">
-                                                            <a href="#" className="btn-round mb-0 btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete">
-                                                                <i className="bi bi-trash" />
-                                                            </a>
-                                                            <a href="dashboard-post-edit.html" className="btn btn-primary btn-round mb-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
-                                                                <i className="bi bi-pencil-square" />
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-
-                                                <tr>
-                                                    <td>
-                                                        <h6 className="mt-2 mt-md-0 mb-0 ">
-                                                            <a href="#" className="text-dark text-decoration-none">
-                                                                How to become a better django and react developer
-                                                            </a>
-                                                        </h6>
-                                                    </td>
-                                                    <td>
-                                                        <h6 className="mb-0">
-                                                            <a href="#" className="text-dark text-decoration-none">
-                                                                201 Views
-                                                            </a>
-                                                        </h6>
-                                                    </td>
-                                                    <td>March 21, 2024.</td>
-                                                    <td>Technology</td>
-                                                    <td>
-                                                        <span className="badge bg-success bg-opacity-10 text-success mb-2">Live</span>
-                                                    </td>
-                                                    <td>
-                                                        <div className="d-flex gap-2">
-                                                            <a href="#" className="btn-round mb-0 btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete">
-                                                                <i className="bi bi-trash" />
-                                                            </a>
-                                                            <a href="dashboard-post-edit.html" className="btn btn-primary btn-round mb-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
-                                                                <i className="bi bi-pencil-square" />
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-
-                                                <tr>
-                                                    <td>
-                                                        <h6 className="mt-2 mt-md-0 mb-0 ">
-                                                            <a href="#" className="text-dark text-decoration-none">
-                                                                How to become a better django and react developer
-                                                            </a>
-                                                        </h6>
-                                                    </td>
-                                                    <td>
-                                                        <h6 className="mb-0">
-                                                            <a href="#" className="text-dark text-decoration-none">
-                                                                201 Views
-                                                            </a>
-                                                        </h6>
-                                                    </td>
-                                                    <td>March 21, 2024.</td>
-                                                    <td>Technology</td>
-                                                    <td>
-                                                        <span className="badge bg-success bg-opacity-10 text-success mb-2">Live</span>
-                                                    </td>
-                                                    <td>
-                                                        <div className="d-flex gap-2">
-                                                            <a href="#" className="btn-round mb-0 btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete">
-                                                                <i className="bi bi-trash" />
-                                                            </a>
-                                                            <a href="dashboard-post-edit.html" className="btn btn-primary btn-round mb-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
-                                                                <i className="bi bi-pencil-square" />
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                                ))}
                                             </tbody>
                                         </table>
                                     </div>

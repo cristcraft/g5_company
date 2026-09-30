@@ -4,7 +4,6 @@ import Footer from "../partials/Footer";
 import { Link } from "react-router-dom";
 import useUserData from "../../plugin/useUserData"
 import apiInstance from "../../utils/axios";
-import moment from "moment";
 import Moment from "../../plugin/Moment";
 
 function Dashboard() {
